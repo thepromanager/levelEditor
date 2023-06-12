@@ -1,6 +1,8 @@
 import pygame
 import pygame_gui
 
+levelPath = "C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/RadioactiveLevels/Level3"
+levelNum = 3
 
 resolution = (1200,700)
 gridSize = 32
@@ -50,6 +52,110 @@ rootImages = {
 "1111":loadImage("levelEditorImages/GreenQuad.png",gridSize),
 "":grassImage
 }
+
+def loadLevel():
+    print("Loading level at "+levelPath+"/Level"+str(levelNum))
+    levelSprite = pygame.image.load(levelPath+"/Level"+str(levelNum)+".png")
+    startParams = open(levelPath+"/StartingHandParameter"+str(levelNum)+".txt", "r")
+    waterParams = open(levelPath+"/WaterTileParameters"+str(levelNum)+".txt", "r")
+
+    width = (levelSprite.get_width()+1)//8 # always 7 tho
+    height = (levelSprite.get_height()+1)//8
+    grid = [[None for i in range (height)] for j in range(width)]
+
+    waterColors = []
+    rockColors = []
+    mutationColors = []
+    lavaColors = []
+
+    for y in range(height):
+        for x in range(width):
+            color = levelSprite.get_at((x*8, y*8))[0:3] #RGBA -> RGB
+            if color[2] == 255:
+                if not color in waterColors:
+                    waterColors.append(color)
+                grid[x][y] = ("Water",waterColors.index(color))
+            elif color[0] == 255:
+                if not color in lavaColors:
+                    lavaColors.append(color)
+                grid[x][y] = ("Lava",lavaColors.index(color))
+            elif color[1] == 255:
+                if not color in mutationColors:
+                    mutationColors.append(color)
+                grid[x][y] = ("Mutation",mutationColors.index(color))
+            elif color[0]==color[1]==color[2]:
+                if not color in rockColors:
+                    rockColors.append(color)
+                grid[x][y] = ("Rock",rockColors.index(color))
+            elif color[0]==136 and color[2]==21:
+                grid[x][y] = ("Visible Rock",-1)
+            else:
+                pass
+
+    paramater = startParams.read().split(",")
+    while len(paramater)<5:
+        paramater.append("")
+    waterTiles = {"start":paramater}
+    lines = waterParams.read().split("\n")
+    for i in range(len(lines)):
+        paramater = lines[i].split(",")
+        while len(paramater)<5:
+            paramater.append("")
+        waterTiles[i] = paramater
+    if len(lines)!=len(waterTiles)-1:
+        print("something is wrong in load pls investigate"+"!!!!"*10)
+    if len(lines)<len(waterColors):
+        for i in range(len(waterColors)-len(waterTiles)):
+            waterTiles[len(waterTiles)] = ["0000","0000","0000","0000",""]
+
+    startParams.close()
+    waterParams.close()
+
+    print("Level loaded successfully!")
+
+    return width, height, grid, waterTiles
+
+def saveLevel():
+    print("Saving level at "+levelPath+"/Level"+str(levelNum))
+    levelSprite = pygame.Surface((width*8-1, height*8-1)) 
+    levelSprite.fill((0,0,0))
+    startParams = open(levelPath+"/StartingHandParameter"+str(levelNum)+".txt", "w")
+    waterParams = open(levelPath+"/WaterTileParameters"+str(levelNum)+".txt", "w")
+
+    representedWaterNumbers = []
+
+    for y in range(height):
+        for x in range(width):
+            block = grid[x][y]
+            if block==None:
+                color = (185,122,87)
+            else:
+                brightness = 1+(block[1]*30)%254 # 40 and 253 are coprime dont worry!
+                if block[0]=="Visible Rock":
+                    color = (136,0,21)
+                elif block[0]=="Water":
+                    color = (0,brightness,255)
+                    if not block[1] in representedWaterNumbers:
+                        representedWaterNumbers.append(block[1])
+                elif block[0]=="Rock":
+                    color = (brightness,brightness,brightness)
+                elif block[0]=="Lava":
+                    color = (255,brightness,0)
+                elif block[0]=="Mutation":
+                    color = (brightness,255,0)
+            pygame.draw.rect(levelSprite, color, (8*x,8*y,7,7), 0)
+
+    pygame.image.save(levelSprite, levelPath+"/Level"+str(levelNum)+".png")
+
+    paramaters = waterTiles["start"]
+    paramaters = [root for root in paramaters if root != ""]
+    startParams.write(",".join(paramaters))
+    for i in representedWaterNumbers:
+        paramaters = waterTiles[i]
+        paramaters = [root for root in paramaters if root != ""]
+        waterParams.write(",".join(paramaters)+"\n"*(i!=representedWaterNumbers[-1]))
+    print("Level saved successfully!")
+
 def inBuildGrid(x,y):
     if(x>=0 and x<width and y>=0 and y<height):
         return True
@@ -135,6 +241,8 @@ mutation_number_box.set_text("0")
 water_selector = pygame_gui.elements.UISelectionList(item_list=["0000","0100","0010","1100","1010","1001","0110","0101","0011","1110","1101","1011","0111","1111",""],relative_rect=pygame.Rect((900, 105), (100, 550)),manager=manager)
 
 
+width, height, grid, waterTiles = loadLevel()
+
 mouseDown = False
 jump_out=False
 while jump_out == False:
@@ -156,7 +264,8 @@ while jump_out == False:
                     if selected:
                         if(selected=="Water"):
                             waterInt=int(water_number_box.get_text())
-                            waterTiles[waterInt]=["0000","0000","0100","0010",""]
+                            if waterInt not in waterTiles:
+                                waterTiles[waterInt]=["0000","0000","0100","0010",""]
                             #add to scren grid and List
                             if(auto_increment.get_single_selection()=="Auto-increment"):
                                 water_number_box.set_text(str(waterInt+1))
@@ -214,6 +323,7 @@ while jump_out == False:
     drawSelectorBlocks()
     pygame.display.flip()
 
+saveLevel()
 
 
 pygame.quit()
