@@ -264,43 +264,44 @@ while jump_out == False:
         if event.type == pygame.MOUSEBUTTONUP:
             mouseDown = False
         if mouseDown or (event.type == pygame.MOUSEBUTTONDOWN and (event.button == 1 or event.button == 3) ):
-            #mouseDown = True
             (mouseX,mouseY)=pygame.mouse.get_pos()
             mouseX=int((mouseX-topLeft[0])//gridSize)
             mouseY=int((mouseY-topLeft[1])//gridSize)
             if(inBuildGrid(mouseX,mouseY)): # inbounds
                 block=grid[mouseX][mouseY]
-                if(event.button == 1):
+                if(mouseDown or event.button == 1):
                     selected=block_selector.get_single_selection()
                     if selected:
-                        if(selected=="Water"):
-                            waterInt=int(water_number_box.get_text())
-                            if waterInt not in waterTiles:
-                                waterTiles[waterInt]=["0000","0000","0100","0010",""]
-                            #add to scren grid and List
-                            if(auto_increment.get_single_selection()=="Auto-increment"):
-                                water_number_box.set_text(str(waterInt+1))
-                            grid[mouseX][mouseY]=("Water",waterInt)
-                        elif(selected=="Rock"):
-                            rockInt=int(rock_number_box.get_text())
-                            grid[mouseX][mouseY]=(selected,rockInt)
-                            if(auto_increment.get_single_selection()=="Auto-increment"):
-                                rock_number_box.set_text(str(rockInt+1))
-                        elif(selected=="Lava"):
-                            lavaInt=int(lava_number_box.get_text())
-                            grid[mouseX][mouseY]=(selected,lavaInt)
-                            if(auto_increment.get_single_selection()=="Auto-increment"):
-                                lava_number_box.set_text(str(lavaInt+1))
-                        elif(selected=="Mutation"):
-                            mutationInt=int(mutation_number_box.get_text())
-                            grid[mouseX][mouseY]=(selected,mutationInt)
-                            if(auto_increment.get_single_selection()=="Auto-increment"):
-                                mutation_number_box.set_text(str(mutationInt+1))
-                        elif(selected=="Erase"):
-                            grid[mouseX][mouseY]=None
-                        else:
-                            grid[mouseX][mouseY]=(selected,-1)
-                if(event.button == 3) and block:
+                        if(not (block and selected==block[0] and mouseDown)):
+                            mouseDown=True
+                            if(selected=="Water"):
+                                waterInt=int(water_number_box.get_text())
+                                if waterInt not in waterTiles:
+                                    waterTiles[waterInt]=["0000","0000","0100","0010",""]
+                                #add to scren grid and List
+                                if(auto_increment.get_single_selection()=="Auto-increment"):
+                                    water_number_box.set_text(str(waterInt+1))
+                                grid[mouseX][mouseY]=("Water",waterInt)
+                            elif(selected=="Rock"):
+                                rockInt=int(rock_number_box.get_text())
+                                grid[mouseX][mouseY]=(selected,rockInt)
+                                if(auto_increment.get_single_selection()=="Auto-increment"):
+                                    rock_number_box.set_text(str(rockInt+1))
+                            elif(selected=="Lava"):
+                                lavaInt=int(lava_number_box.get_text())
+                                grid[mouseX][mouseY]=(selected,lavaInt)
+                                if(auto_increment.get_single_selection()=="Auto-increment"):
+                                    lava_number_box.set_text(str(lavaInt+1))
+                            elif(selected=="Mutation"):
+                                mutationInt=int(mutation_number_box.get_text())
+                                grid[mouseX][mouseY]=(selected,mutationInt)
+                                if(auto_increment.get_single_selection()=="Auto-increment"):
+                                    mutation_number_box.set_text(str(mutationInt+1))
+                            elif(selected=="Erase"):
+                                grid[mouseX][mouseY]=None
+                            else:
+                                grid[mouseX][mouseY]=(selected,-1)
+                if not mouseDown and event.button == 3 and block:
                     selected = block[0]
                     #block_selector.set_single_selection(selected)
                     if(selected=="Water"):
