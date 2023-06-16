@@ -122,44 +122,48 @@ def loadLevel():
 
 def saveLevel():
     print("Saving level at "+levelPath+"/Level"+str(levelNum))
-    levelSprite = pygame.Surface((width*8-1, height*8-1)) 
-    levelSprite.fill((0,0,0))
-    startParams = open(levelPath+"/StartingHandParameter"+str(levelNum)+".txt", "w")
-    waterParams = open(levelPath+"/WaterTileParameters"+str(levelNum)+".txt", "w")
+    try:
+        levelSprite = pygame.Surface((width*8-1, height*8-1)) 
+        levelSprite.fill((0,0,0))
+        startParams = open(levelPath+"/StartingHandParameter"+str(levelNum)+".txt", "w")
+        waterParams = open(levelPath+"/WaterTileParameters"+str(levelNum)+".txt", "w")
 
-    representedWaterNumbers = []
+        representedWaterNumbers = []
 
-    for y in range(height):
-        for x in range(width):
-            block = grid[x][y]
-            if block==None:
-                color = (185,122,87)
-            else:
-                brightness = 1+(block[1]*30)%254 # 40 and 253 are coprime dont worry!
-                if block[0]=="Visible Rock":
-                    color = (136,0,21)
-                elif block[0]=="Water":
-                    color = (0,brightness,255)
-                    if not block[1] in representedWaterNumbers:
-                        representedWaterNumbers.append(block[1])
-                elif block[0]=="Rock":
-                    color = (brightness,brightness,brightness)
-                elif block[0]=="Lava":
-                    color = (255,brightness,0)
-                elif block[0]=="Mutation":
-                    color = (brightness,255,0)
-            pygame.draw.rect(levelSprite, color, (8*x,8*y,7,7), 0)
+        for y in range(height):
+            for x in range(width):
+                block = grid[x][y]
+                if block==None:
+                    color = (185,122,87)
+                else:
+                    brightness = 1+(block[1]*30)%254 # 40 and 253 are coprime dont worry!
+                    if block[0]=="Visible Rock":
+                        color = (136,0,21)
+                    elif block[0]=="Water":
+                        color = (0,brightness,255)
+                        if not block[1] in representedWaterNumbers:
+                            representedWaterNumbers.append(block[1])
+                    elif block[0]=="Rock":
+                        color = (brightness,brightness,brightness)
+                    elif block[0]=="Lava":
+                        color = (255,brightness,0)
+                    elif block[0]=="Mutation":
+                        color = (brightness,255,0)
+                pygame.draw.rect(levelSprite, color, (8*x,8*y,7,7), 0)
 
-    pygame.image.save(levelSprite, levelPath+"/Level"+str(levelNum)+".png")
+        pygame.image.save(levelSprite, levelPath+"/Level"+str(levelNum)+".png")
 
-    paramaters = waterTiles["start"]
-    paramaters = [root for root in paramaters if root != ""]
-    startParams.write(",".join(paramaters))
-    for i in representedWaterNumbers:
-        paramaters = waterTiles[i]
+        paramaters = waterTiles["start"]
         paramaters = [root for root in paramaters if root != ""]
-        waterParams.write(",".join(paramaters)+"\n"*(i!=representedWaterNumbers[-1]))
-    print("Level saved successfully!")
+        startParams.write(",".join(paramaters))
+        for i in representedWaterNumbers:
+            paramaters = waterTiles[i]
+            paramaters = [root for root in paramaters if root != ""]
+            waterParams.write(",".join(paramaters)+"\n"*(i!=representedWaterNumbers[-1]))
+        print("Level saved successfully!")
+    except:
+        print("failed to save")
+        return None
 
 def inBuildGrid(x,y):
     if(x>=0 and x<width and y>=0 and y<height):
