@@ -1,6 +1,7 @@
 import pygame
 import pygame_gui
 
+# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/GrassLevels/Level
 levelPath = "levels" #grasslevels ha den i rätt mapp så behöver du inte hela din path
 levelNum = 1
 
@@ -116,8 +117,8 @@ def loadLevel():
 
         return (width, height, grid, waterTiles)
     except:
-        return None
         print("failed to load")
+        return None
 
 def saveLevel():
     print("Saving level at "+levelPath+"/Level"+str(levelNum))
