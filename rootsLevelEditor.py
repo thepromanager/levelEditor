@@ -2,10 +2,16 @@ import pygame
 import pygame_gui
 
 # C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/GrassLevels/Level
+# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/FrostLevels/Level
+# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/VolcanoLevels/Level
+# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/RadioactiveLevels/Level
+# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/RootLevels
 levelPath = "levels" #grasslevels ha den i rätt mapp så behöver du inte hela din path
 levelNum = 1
 
-resolution = (1200,700)
+folderNumbers = 0 # whether to autoadd levelnum at the end of path
+
+resolution = (1300,700)
 gridSize = 32
 topLeft = [350,gridSize]
 pygame.init()
@@ -34,6 +40,7 @@ grassImage = loadImage("levelEditorImages/dirt.png", gridSize)
 rockImage = loadImage("levelEditorImages/stone.png", gridSize)
 visiblerockImage = loadImage("levelEditorImages/visiblestone.png", gridSize)
 lavaImage = loadImage("levelEditorImages/lava.png", gridSize)
+visiblelavaImage = loadImage("levelEditorImages/visiblelava.png", gridSize)
 waterImage = loadImage("levelEditorImages/water.png", gridSize)
 mutationImage = loadImage("levelEditorImages/mutation.png", gridSize)
 rootImages = {
@@ -55,11 +62,11 @@ rootImages = {
 }
 
 def loadLevel():
-    print("Loading level at "+levelPath+"/Level"+str(levelNum))
+    print("Loading level at "+levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum))
     try:
-        levelSprite = pygame.image.load(levelPath+"/Level"+str(levelNum)+".png")
-        startParams = open(levelPath+"/StartingHandParameter"+str(levelNum)+".txt", "r")
-        waterParams = open(levelPath+"/WaterTileParameters"+str(levelNum)+".txt", "r")
+        levelSprite = pygame.image.load(levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum)+".png")
+        startParams = open(levelPath+str(levelNum)*folderNumbers+"/StartingHandParameter"+str(levelNum)+".txt", "r")
+        waterParams = open(levelPath+str(levelNum)*folderNumbers+"/WaterTileParameters"+str(levelNum)+".txt", "r")
 
         width = (levelSprite.get_width()+1)//8 # always 7 tho
         height = (levelSprite.get_height()+1)//8
@@ -115,43 +122,108 @@ def loadLevel():
 
         print("Level loaded successfully!")
 
-        return (width, height, grid, waterTiles)
-    except:
+        return (width, height, grid, waterTiles, 0)
+    except Exception as e:
         print("failed to load")
+        print("error", e)
+        return None
+
+def newLoadLevel():
+    print("NewLoading level at "+levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum))
+    try:
+        levelFile = open(levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum)+".txt", "r")
+        levelString = levelFile.read()
+        levelList = levelString.split(".")
+        startParams = levelList.pop(0)
+        iceParam = int(levelList.pop(0))
+
+        width = 7
+        height = len(levelList)//7
+        grid = [[None for i in range (height)] for j in range(width)]
+
+
+        startParams = startParams.split(",")
+        while len(startParams)<5:
+            startParams.append("")
+        waterTiles = {"start":startParams}
+
+        for i in range(len(levelList)):
+
+            x = i % width
+            y = i//width
+            block = levelList[i]
+
+            blockData = block.split(":")
+            if blockData[0] == "w":
+                grid[x][y] = ("Water",int(blockData[1]))
+                if len(blockData)>2:
+                    # read water parameter
+                    paramater = blockData[2].split(",")
+                    while len(paramater)<5:
+                        paramater.append("")
+                    waterTiles[int(blockData[1])] = paramater
+                elif not int(blockData[1]) in waterTiles:
+                    waterTiles[int(blockData[1])] = ["0000","0000","0000","0000",""]
+            elif blockData[0] == "hl":
+                grid[x][y] = ("Lava",int(blockData[1]))
+            elif blockData[0]=="l":
+                grid[x][y] = ("Visible Lava",-1)
+            elif blockData[0] == "m":
+                grid[x][y] = ("Mutation",int(blockData[1]))
+            elif blockData[0]=="h":
+                grid[x][y] = ("Rock",int(blockData[1]))
+            elif blockData[0]=="s":
+                grid[x][y] = ("Visible Rock",-1)
+            elif blockData[0]=="r":
+                grid[x][y] = (blockData[1],-1)
+
+        levelFile.close()
+        print("Level loaded successfully!")
+
+        return (width, height, grid, waterTiles, iceParam)
+    except Exception as e:
+        print("failed to load")
+        print("error", e)
         return None
 
 def saveLevel():
-    print("Saving level at "+levelPath+"/Level"+str(levelNum))
+    print("Saving level at "+levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum))
     try:
         levelSprite = pygame.Surface((width*8-1, height*8-1)) 
         levelSprite.fill((0,0,0))
-        startParams = open(levelPath+"/StartingHandParameter"+str(levelNum)+".txt", "w")
-        waterParams = open(levelPath+"/WaterTileParameters"+str(levelNum)+".txt", "w")
+        startParams = open(levelPath+str(levelNum)*folderNumbers+"/StartingHandParameter"+str(levelNum)+".txt", "w")
+        waterParams = open(levelPath+str(levelNum)*folderNumbers+"/WaterTileParameters"+str(levelNum)+".txt", "w")
 
         representedWaterNumbers = []
 
-        for y in range(height):
-            for x in range(width):
-                block = grid[x][y]
-                if block==None:
-                    color = (185,122,87)
-                else:
-                    brightness = 1+(block[1]*30)%254 # 40 and 253 are coprime dont worry!
-                    if block[0]=="Visible Rock":
-                        color = (136,0,21)
-                    elif block[0]=="Water":
-                        color = (0,brightness,255)
-                        if not block[1] in representedWaterNumbers:
-                            representedWaterNumbers.append(block[1])
-                    elif block[0]=="Rock":
-                        color = (brightness,brightness,brightness)
-                    elif block[0]=="Lava":
-                        color = (255,brightness,0)
-                    elif block[0]=="Mutation":
-                        color = (brightness,255,0)
-                pygame.draw.rect(levelSprite, color, (8*x,8*y,7,7), 0)
+        try:
+            for y in range(height):
+                for x in range(width):
+                    block = grid[x][y]
+                    if block==None:
+                        color = (185,122,87)
+                    else:
+                        brightness = 1+(block[1]*30)%254 # 40 and 253 are coprime dont worry!
+                        if block[0]=="Visible Rock":
+                            color = (136,0,21)
+                        elif block[0]=="Water":
+                            color = (0,brightness,255)
+                            if not block[1] in representedWaterNumbers:
+                                representedWaterNumbers.append(block[1])
+                        elif block[0]=="Rock":
+                            color = (brightness,brightness,brightness)
+                        elif block[0]=="Lava":
+                            color = (255,brightness,0)
+                        elif block[0]=="Mutation":
+                            color = (brightness,255,0)
+                        else:
+                            raise Exception("Saving roots in image is not supported")
+                    pygame.draw.rect(levelSprite, color, (8*x,8*y,7,7), 0)
 
-        pygame.image.save(levelSprite, levelPath+"/Level"+str(levelNum)+".png")
+            pygame.image.save(levelSprite, levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum)+".png")
+        except Exception as e:
+            print("No image saved - cant render roots:")
+            print(e)
 
         paramaters = waterTiles["start"]
         paramaters = [root for root in paramaters if root != ""]
@@ -161,8 +233,59 @@ def saveLevel():
             paramaters = [root for root in paramaters if root != ""]
             waterParams.write(",".join(paramaters)+"\n"*(i!=representedWaterNumbers[-1]))
         print("Level saved successfully!")
-    except:
+    except Exception as e:
         print("failed to save")
+        print("error", e)
+        return None
+
+def newSaveLevel():
+    print("NewSaving level at "+levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum))
+    try:
+        levelFile = open(levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum)+".txt", "w")
+
+        representedWaterNumbers = []
+
+        levelString = ""
+
+        paramaters = waterTiles["start"]
+        paramaters = [root for root in paramaters if root != ""]
+        levelString += ",".join(paramaters)
+
+        levelString += "." + str(ice_box.get_text())
+
+        for y in range(height):
+            for x in range(width):
+                block = grid[x][y]
+                if block==None:
+                    letter = "d"
+                else:
+                    if block[0]=="Visible Rock":
+                        letter = "s"
+                    elif block[0]=="Water":
+                        letter = "w:" + str(block[1])
+                        if not block[1] in representedWaterNumbers:
+                            representedWaterNumbers.append(block[1])
+                            paramaters = waterTiles[block[1]]
+                            paramaters = [root for root in paramaters if root != ""]
+                            letter += ":" + ",".join(paramaters)
+                    elif block[0]=="Rock":
+                        letter = "h:" + str(block[1])
+                    elif block[0]=="Lava":
+                        letter = "hl:" + str(block[1])
+                    elif block[0]=="Visible Lava":
+                        letter = "l"
+                    elif block[0]=="Mutation":
+                        letter = "m:" + str(block[1])
+                    else:
+                        letter = "r:" + str(block[0])
+                levelString += "." + letter
+        print(levelString)
+        levelFile.write(levelString)
+        levelFile.close()
+        print("Level saved successfully!")
+    except Exception as e:
+        print("failed to save")
+        print("error", e)
         return None
 
 def inBuildGrid(x,y):
@@ -185,20 +308,23 @@ def drawGrid():
                 text=my_font.render(str(block[1]), False, (0, 0, 0))
                 if(block[0]=="Water"):
                     img=waterImage
-                if(block[0]=="Rock"):
+                elif(block[0]=="Rock"):
                     img=rockImage
                     #Show letter
-                if(block[0]=="Visible Rock"):
+                elif(block[0]=="Visible Rock"):
                     img=visiblerockImage
                     text=None
-                if(block[0]=="Lava"):
+                elif(block[0]=="Lava"):
                     img=lavaImage
                     #Show letter
-                if(block[0]=="Mutation"):
+                elif(block[0]=="Mutation"):
                     img=mutationImage
                     #Show letter
-                if(block[0]=="Visible Lava"):
-                    img=lavaImage
+                elif(block[0]=="Visible Lava"):
+                    img=visiblelavaImage
+                    text=None
+                else:
+                    img=rootImages[block[0]]
                     text=None
             else:
                 img=grassImage
@@ -224,21 +350,21 @@ def drawSelectorBlocks():
     for y in range(len(rootImages)):
         img=list(rootImages.values())[y]
         game_display.blit(img, (882, y*gridSize+122))
-block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Lava","Mutation","Erase"],relative_rect=pygame.Rect((50, 10), (200, 224)),manager=manager)
-auto_increment = pygame_gui.elements.UISelectionList(item_list=["Auto-increment","Same Number"],relative_rect=pygame.Rect((50, 210), (200, 96)),manager=manager)
+block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Lava","Visible Lava","Mutation","Root","Erase"],relative_rect=pygame.Rect((50, 10), (200, 296)),manager=manager)
+auto_increment = pygame_gui.elements.UISelectionList(item_list=["Auto-increment","Same Number"],relative_rect=pygame.Rect((50, 280), (200, 96)),manager=manager)
 
-rock_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 300), (200, 40)),html_text="Rock group index:",manager=manager)
-rock_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 330), (200, 50)),manager=manager)
+rock_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 390), (200, 40)),html_text="Rock group index:",manager=manager)
+rock_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 420), (200, 50)),manager=manager)
 rock_number_box.set_allowed_characters("numbers")
 rock_number_box.set_text("0")
 
-water_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 400), (200, 40)),html_text="Water group index:",manager=manager)
-water_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 430), (200, 50)),manager=manager)
+water_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 460), (200, 40)),html_text="Water group index:",manager=manager)
+water_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 490), (200, 50)),manager=manager)
 water_number_box.set_allowed_characters("numbers")
 water_number_box.set_text("0")
 
-lava_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 500), (200, 40)),html_text="Lava group index:",manager=manager)
-lava_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 530), (200, 50)),manager=manager)
+lava_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 530), (200, 40)),html_text="Lava group index:",manager=manager)
+lava_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 560), (200, 50)),manager=manager)
 lava_number_box.set_allowed_characters("numbers")
 lava_number_box.set_text("0")
 
@@ -249,13 +375,19 @@ mutation_number_box.set_text("0")
 
 water_selector = pygame_gui.elements.UISelectionList(item_list=["0000","0100","0010","1100","1010","1001","0110","0101","0011","1110","1101","1011","0111","1111",""],relative_rect=pygame.Rect((900, 105), (100, 550)),manager=manager)
 
-load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1000,20), (80, 40)),text='Load',manager=manager)
-save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((900,20), (80, 40)),text='Save',manager=manager)
-path_text_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((900, 80), (100, 50)),manager=manager)
+load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1100,20), (80, 40)),text='Load',manager=manager)
+newload_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1100,120), (80, 40)),text='NewLoad',manager=manager)
+save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1000,20), (80, 40)),text='Save',manager=manager)
+newsave_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1000,120), (80, 40)),text='NewSave',manager=manager)
+path_text_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((1000, 180), (100, 50)),manager=manager)
 path_text_box.set_text("levels")
-level_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((1000, 80), (100, 50)),manager=manager)
+level_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((1100, 180), (100, 50)),manager=manager)
 level_number_box.set_allowed_characters("numbers")
 level_number_box.set_text("0")
+lava_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((1100, 300), (100, 40)),html_text="Ice:",manager=manager)
+ice_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((1100, 350), (100, 50)),manager=manager)
+ice_box.set_allowed_characters("numbers")
+ice_box.set_text("0")
 
 
 mouseDown = False
@@ -301,6 +433,10 @@ while jump_out == False:
                                 grid[mouseX][mouseY]=(selected,mutationInt)
                                 if(auto_increment.get_single_selection()=="Auto-increment"):
                                     mutation_number_box.set_text(str(mutationInt+1))
+                            elif(selected=="Root"):
+                                selected=water_selector.get_single_selection()
+                                if(selected!=None):
+                                    grid[mouseX][mouseY]=(selected,-1)
                             elif(selected=="Erase"):
                                 grid[mouseX][mouseY]=None
                             else:
@@ -330,12 +466,24 @@ while jump_out == False:
                     levelNum=int(level_number_box.get_text())
                     levelPath=path_text_box.get_text()
                     saveLevel()
+                if event.ui_element == newsave_button:
+                    levelNum=int(level_number_box.get_text())
+                    levelPath=path_text_box.get_text()
+                    newSaveLevel()
                 if event.ui_element == load_button:
                     levelNum=int(level_number_box.get_text())
                     levelPath=path_text_box.get_text()
                     level = loadLevel()
                     if(level):
-                        (width, height, grid, waterTiles) = level
+                        (width, height, grid, waterTiles, ice) = level
+                        ice_box.set_text(str(ice))
+                if event.ui_element == newload_button:
+                    levelNum=int(level_number_box.get_text())
+                    levelPath=path_text_box.get_text()
+                    level = newLoadLevel()
+                    if(level):
+                        (width, height, grid, waterTiles, ice) = level
+                        ice_box.set_text(str(ice))
         manager.process_events(event)
 
     manager.update(time_delta)
