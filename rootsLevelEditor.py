@@ -37,6 +37,7 @@ def loadImage(name,r,r2=None):
     return image
 
 grassImage = loadImage("levelEditorImages/dirt.png", gridSize)
+starImage = loadImage("levelEditorImages/star.png", gridSize)
 rockImage = loadImage("levelEditorImages/stone.png", gridSize)
 visiblerockImage = loadImage("levelEditorImages/visiblestone.png", gridSize)
 lavaImage = loadImage("levelEditorImages/lava.png", gridSize)
@@ -174,6 +175,8 @@ def newLoadLevel():
                 grid[x][y] = ("Rock",int(blockData[1]))
             elif blockData[0]=="s":
                 grid[x][y] = ("Visible Rock",-1)
+            elif blockData[0]=="st":
+                grid[x][y] = ("Star",int(blockData[1]))
             elif blockData[0]=="r":
                 grid[x][y] = (blockData[1],-1)
 
@@ -206,6 +209,8 @@ def saveLevel():
                         brightness = 1+(block[1]*30)%254 # 40 and 253 are coprime dont worry!
                         if block[0]=="Visible Rock":
                             color = (136,0,21)
+                        #elif block[0]=="Visible Lava":
+                        #    color = (136,0,21)
                         elif block[0]=="Water":
                             color = (0,brightness,255)
                             if not block[1] in representedWaterNumbers:
@@ -217,7 +222,7 @@ def saveLevel():
                         elif block[0]=="Mutation":
                             color = (brightness,255,0)
                         else:
-                            raise Exception("Saving roots in image is not supported")
+                            raise Exception("Saving stars/roots/visible lava in image is not supported")
                     pygame.draw.rect(levelSprite, color, (8*x,8*y,7,7), 0)
 
             pygame.image.save(levelSprite, levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum)+".png")
@@ -268,6 +273,8 @@ def newSaveLevel():
                             paramaters = waterTiles[block[1]]
                             paramaters = [root for root in paramaters if root != ""]
                             letter += ":" + ",".join(paramaters)
+                    elif block[0]=="Star":
+                        letter = "st:" + str(block[1]) # 0?
                     elif block[0]=="Rock":
                         letter = "h:" + str(block[1])
                     elif block[0]=="Lava":
@@ -311,6 +318,9 @@ def drawGrid():
                 elif(block[0]=="Rock"):
                     img=rockImage
                     #Show letter
+                elif(block[0]=="Star"):
+                    img=starImage
+                    #Show letter
                 elif(block[0]=="Visible Rock"):
                     img=visiblerockImage
                     text=None
@@ -350,7 +360,7 @@ def drawSelectorBlocks():
     for y in range(len(rootImages)):
         img=list(rootImages.values())[y]
         game_display.blit(img, (882, y*gridSize+122))
-block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Lava","Visible Lava","Mutation","Root","Erase"],relative_rect=pygame.Rect((50, 10), (200, 296)),manager=manager)
+block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Lava","Visible Lava","Mutation","Root","Erase","Star"],relative_rect=pygame.Rect((50, 10), (200, 296)),manager=manager)
 auto_increment = pygame_gui.elements.UISelectionList(item_list=["Auto-increment","Same Number"],relative_rect=pygame.Rect((50, 280), (200, 96)),manager=manager)
 
 rock_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 390), (200, 40)),html_text="Rock group index:",manager=manager)
@@ -423,6 +433,9 @@ while jump_out == False:
                                 grid[mouseX][mouseY]=(selected,rockInt)
                                 if(auto_increment.get_single_selection()=="Auto-increment"):
                                     rock_number_box.set_text(str(rockInt+1))
+                            elif(selected=="Star"):
+                                starInt=0
+                                grid[mouseX][mouseY]=(selected,starInt)
                             elif(selected=="Lava"):
                                 lavaInt=int(lava_number_box.get_text())
                                 grid[mouseX][mouseY]=(selected,lavaInt)
