@@ -1,13 +1,15 @@
 import pygame
 import pygame_gui
+import os
 
 # C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/GrassLevels/Level
 # C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/FrostLevels/Level
 # C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/VolcanoLevels/Level
 # C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/RadioactiveLevels/Level
 # C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/RootLevels
-levelPath = "levels" #grasslevels ha den i rätt mapp så behöver du inte hela din path
-levelNum = 1
+levelPath = "Levels/RootLevels" #grasslevels ha den i rätt mapp så behöver du inte hela din path
+#levelNum = 1
+levelName = ""
 
 folderNumbers = 0 # whether to autoadd levelnum at the end of path
 
@@ -23,8 +25,8 @@ pygame.font.init()
 my_font = pygame.font.Font("Arial.ttf", 20)
 
 width=7
-height=20
-grid = [[None for i in range (20)] for j in range(7)]
+height=12
+grid = [[None for i in range (height)] for j in range(width)]
 waterTiles = {"start":["0000","0000","0100","0010","0010"]}
 def waterGrid():
     return list(waterTiles.values())
@@ -35,6 +37,8 @@ def loadImage(name,r,r2=None):
     image = pygame.image.load(name)
     image = pygame.transform.scale(image, (r, r2))
     return image
+def getFileNames(path):
+    return [f[:-4] for f in os.listdir(path) if f[-4:]==".txt"]
 
 grassImage = loadImage("levelEditorImages/dirt.png", gridSize)
 starImage = loadImage("levelEditorImages/star.png", gridSize)
@@ -128,11 +132,13 @@ def loadLevel():
         print("failed to load")
         print("error", e)
         return None
+#does not work with new system yet, använder vi nånsin längre?
+
 
 def newLoadLevel():
-    print("NewLoading level at "+levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum))
+    print("NewLoading level at "+levelPath+"/"+levelName)
     try:
-        levelFile = open(levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum)+".txt", "r")
+        levelFile = open(levelPath+"/"+levelName+".txt", "r")
         levelString = levelFile.read()
         levelList = levelString.split(".")
         startParams = levelList.pop(0)
@@ -242,11 +248,12 @@ def saveLevel():
         print("failed to save")
         print("error", e)
         return None
+#does not work with new system yet, använder vi nånsin längre?
 
 def newSaveLevel():
-    print("NewSaving level at "+levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum))
+    print("NewSaving level at "+levelPath+"/"+levelName)
     try:
-        levelFile = open(levelPath+str(levelNum)*folderNumbers+"/Level"+str(levelNum)+".txt", "w")
+        levelFile = open(levelPath+"/"+levelName+".txt", "w")
 
         representedWaterNumbers = []
 
@@ -360,8 +367,8 @@ def drawSelectorBlocks():
     for y in range(len(rootImages)):
         img=list(rootImages.values())[y]
         game_display.blit(img, (882, y*gridSize+122))
-block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Lava","Visible Lava","Mutation","Root","Erase","Star"],relative_rect=pygame.Rect((50, 10), (200, 296)),manager=manager)
-auto_increment = pygame_gui.elements.UISelectionList(item_list=["Auto-increment","Same Number"],relative_rect=pygame.Rect((50, 280), (200, 96)),manager=manager)
+block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Lava","Visible Lava","Mutation","Root","Erase","Star"],relative_rect=pygame.Rect((50, 0), (200, 320)),manager=manager)
+auto_increment = pygame_gui.elements.UISelectionList(item_list=["Auto-increment","Same Number"],relative_rect=pygame.Rect((50, 300), (200, 96)),manager=manager)
 
 rock_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 390), (200, 40)),html_text="Rock group index:",manager=manager)
 rock_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 420), (200, 50)),manager=manager)
@@ -390,14 +397,16 @@ newload_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1100,12
 save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1000,20), (80, 40)),text='Save',manager=manager)
 newsave_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1000,120), (80, 40)),text='NewSave',manager=manager)
 path_text_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((1000, 180), (100, 50)),manager=manager)
-path_text_box.set_text("levels")
-level_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((1100, 180), (100, 50)),manager=manager)
-level_number_box.set_allowed_characters("numbers")
-level_number_box.set_text("0")
+path_text_box.set_text(levelPath)
+level_text_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((1100, 180), (100, 50)),manager=manager)
+level_text_box.set_text("")
 lava_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((1100, 300), (100, 40)),html_text="Ice:",manager=manager)
 ice_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((1100, 350), (100, 50)),manager=manager)
 ice_box.set_allowed_characters("numbers")
 ice_box.set_text("0")
+
+level_selector = pygame_gui.elements.UISelectionList(item_list=getFileNames(levelPath),relative_rect=pygame.Rect((1000, 400), (200, 250)),manager=manager)
+level_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1000,350), (80, 40)),text='Load Files',manager=manager)
 
 
 mouseDown = False
@@ -475,28 +484,35 @@ while jump_out == False:
 
         if event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == level_button:
+                    levelPath=path_text_box.get_text()
+                    level_selector.set_item_list(getFileNames(levelPath))
+                    level_selector.rebuild()
                 if event.ui_element == save_button:
-                    levelNum=int(level_number_box.get_text())
+                    levelName=level_text_box.get_text()
                     levelPath=path_text_box.get_text()
                     saveLevel()
                 if event.ui_element == newsave_button:
-                    levelNum=int(level_number_box.get_text())
+                    levelName=level_text_box.get_text()
                     levelPath=path_text_box.get_text()
                     newSaveLevel()
                 if event.ui_element == load_button:
-                    levelNum=int(level_number_box.get_text())
+                    levelName=level_text_box.get_text()
                     levelPath=path_text_box.get_text()
                     level = loadLevel()
                     if(level):
                         (width, height, grid, waterTiles, ice) = level
                         ice_box.set_text(str(ice))
                 if event.ui_element == newload_button:
-                    levelNum=int(level_number_box.get_text())
+                    levelName=level_text_box.get_text()
                     levelPath=path_text_box.get_text()
                     level = newLoadLevel()
                     if(level):
                         (width, height, grid, waterTiles, ice) = level
                         ice_box.set_text(str(ice))
+            if event.user_type == pygame_gui.UI_SELECTION_LIST_NEW_SELECTION:
+                if event.ui_element == level_selector:
+                    level_text_box.set_text(event.text)
         manager.process_events(event)
 
     manager.update(time_delta)
