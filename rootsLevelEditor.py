@@ -2,16 +2,12 @@ import pygame
 import pygame_gui
 import os
 
-# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/GrassLevels/Level
-# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/FrostLevels/Level
-# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/VolcanoLevels/Level
-# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/RadioactiveLevels/Level
-# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Sprites/Levels/RootLevels
-levelPath = "Levels/RootLevels" #grasslevels ha den i rätt mapp så behöver du inte hela din path
+# C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Levels
+levelPath = "RootLevels" #grasslevels ha den i rätt mapp så behöver du inte hela din path
+#vad menar du ska jag ha alla random filer till leveleditorn i samma mapp som alla assets till spelet?
 #levelNum = 1
+repoToUnityPath = "C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Levels" # gjorde en sånhär istället. då kan man tex ha leveleditorn i en mapp och låta denna vara "../Levels" typ
 levelName = ""
-
-folderNumbers = 0 # whether to autoadd levelnum at the end of path
 
 resolution = (1300,700)
 gridSize = 32
@@ -38,7 +34,11 @@ def loadImage(name,r,r2=None):
     image = pygame.transform.scale(image, (r, r2))
     return image
 def getFileNames(path):
-    return [f[:-4] for f in os.listdir(path) if f[-4:]==".txt"]
+    print("getting filenames at: " + repoToUnityPath + "/" + path)
+    try:
+        return [f[:-4] for f in os.listdir(repoToUnityPath + "/" + path) if f[-4:]==".txt"]
+    except:
+        return []
 
 grassImage = loadImage("levelEditorImages/dirt.png", gridSize)
 starImage = loadImage("levelEditorImages/star.png", gridSize)
@@ -136,9 +136,9 @@ def loadLevel():
 
 
 def newLoadLevel():
-    print("NewLoading level at "+levelPath+"/"+levelName)
+    print("NewLoading level at "+repoToUnityPath + "/" + levelPath+"/"+levelName)
     try:
-        levelFile = open(levelPath+"/"+levelName+".txt", "r")
+        levelFile = open(repoToUnityPath + "/" + levelPath+"/"+levelName+".txt", "r")
         levelString = levelFile.read()
         levelList = levelString.split(".")
         startParams = levelList.pop(0)
@@ -251,9 +251,9 @@ def saveLevel():
 #does not work with new system yet, använder vi nånsin längre?
 
 def newSaveLevel():
-    print("NewSaving level at "+levelPath+"/"+levelName)
+    print("NewSaving level at "+repoToUnityPath + "/" + +levelPath+"/"+levelName)
     try:
-        levelFile = open(levelPath+"/"+levelName+".txt", "w")
+        levelFile = open(repoToUnityPath + "/" + levelPath+"/"+levelName+".txt", "w")
 
         representedWaterNumbers = []
 
@@ -392,6 +392,9 @@ mutation_number_box.set_text("0")
 
 water_selector = pygame_gui.elements.UISelectionList(item_list=["0000","0100","0010","1100","1010","1001","0110","0101","0011","1110","1101","1011","0111","1111",""],relative_rect=pygame.Rect((900, 105), (100, 550)),manager=manager)
 
+less_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((240,20), (80, 40)),text='Less',manager=manager)
+more_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((240,60), (80, 40)),text='More',manager=manager)
+
 load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1100,20), (80, 40)),text='Load',manager=manager)
 newload_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1100,120), (80, 40)),text='NewLoad',manager=manager)
 save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1000,20), (80, 40)),text='Save',manager=manager)
@@ -510,6 +513,12 @@ while jump_out == False:
                     if(level):
                         (width, height, grid, waterTiles, ice) = level
                         ice_box.set_text(str(ice))
+                if event.ui_element == more_button:
+                    for col in grid:
+                        col.append(None)
+                if event.ui_element == less_button:
+                    for col in grid:
+                        col.pop()
             if event.user_type == pygame_gui.UI_SELECTION_LIST_NEW_SELECTION:
                 if event.ui_element == level_selector:
                     level_text_box.set_text(event.text)
