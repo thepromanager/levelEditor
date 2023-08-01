@@ -454,7 +454,7 @@ while jump_out == False:
                             if(selected=="Water"):
                                 waterInt=int(water_number_box.get_text())
                                 if waterInt not in waterTiles:
-                                    waterTiles[waterInt]=["0000","0000","0100","0010",""]
+                                    waterTiles[waterInt]=["0000","0000","0000","0000",""]
                                 #add to scren grid and List
                                 if(auto_increment.get_single_selection()=="Auto-increment"):
                                     water_number_box.set_text(str(waterInt+1))
@@ -504,10 +504,12 @@ while jump_out == False:
                         rock_number_box.set_text(str(block[1]))
                     elif(selected=="Lava"):
                         lava_number_box.set_text(str(block[1]))
+                    elif(selected=="Mutation"):
+                        mutation_number_box.set_text(str(block[1]))
                     elif(selected=="Key"):
-                        lava_number_box.set_text(str(block[1]))
+                        key_number_box.set_text(str(block[1]))
                     elif(selected=="Lock"):
-                        lava_number_box.set_text(str(block[1]))
+                        key_number_box.set_text(str(block[1]))
             if(inWaterGrid(mouseX,mouseY)):
                 g=waterGrid()
                 selected=water_selector.get_single_selection()
