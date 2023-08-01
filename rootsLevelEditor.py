@@ -9,7 +9,7 @@ levelPath = "RootLevels" #grasslevels ha den i rätt mapp så behöver du inte h
 repoToUnityPath = "C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Levels" # gjorde en sånhär istället. då kan man tex ha leveleditorn i en mapp och låta denna vara "../Levels" typ
 levelName = ""
 
-resolution = (1300,700)
+resolution = (1300,800)
 gridSize = 32
 topLeft = [350,gridSize]
 pygame.init()
@@ -42,6 +42,8 @@ def getFileNames(path):
 
 grassImage = loadImage("levelEditorImages/dirt.png", gridSize)
 starImage = loadImage("levelEditorImages/star.png", gridSize)
+keyImage = loadImage("levelEditorImages/key.png", gridSize)
+lockImage = loadImage("levelEditorImages/lock.png", gridSize)
 rockImage = loadImage("levelEditorImages/stone.png", gridSize)
 visiblerockImage = loadImage("levelEditorImages/visiblestone.png", gridSize)
 lavaImage = loadImage("levelEditorImages/lava.png", gridSize)
@@ -183,6 +185,10 @@ def newLoadLevel():
                 grid[x][y] = ("Visible Rock",-1)
             elif blockData[0]=="st":
                 grid[x][y] = ("Star",int(blockData[1]))
+            elif blockData[0]=="k":
+                grid[x][y] = ("Key",int(blockData[1]))
+            elif blockData[0]=="kl":
+                grid[x][y] = ("Lock",int(blockData[1]))
             elif blockData[0]=="r":
                 grid[x][y] = (blockData[1],-1)
 
@@ -282,6 +288,10 @@ def newSaveLevel():
                             letter += ":" + ",".join(paramaters)
                     elif block[0]=="Star":
                         letter = "st:" + str(block[1]) # 0?
+                    elif block[0]=="Key":
+                        letter = "k:" + str(block[1])
+                    elif block[0]=="Lock":
+                        letter = "kl:" + str(block[1])
                     elif block[0]=="Rock":
                         letter = "h:" + str(block[1])
                     elif block[0]=="Lava":
@@ -324,19 +334,19 @@ def drawGrid():
                     img=waterImage
                 elif(block[0]=="Rock"):
                     img=rockImage
-                    #Show letter
                 elif(block[0]=="Star"):
                     img=starImage
-                    #Show letter
+                elif(block[0]=="Key"):
+                    img=keyImage
+                elif(block[0]=="Lock"):
+                    img=lockImage
                 elif(block[0]=="Visible Rock"):
                     img=visiblerockImage
                     text=None
                 elif(block[0]=="Lava"):
                     img=lavaImage
-                    #Show letter
                 elif(block[0]=="Mutation"):
                     img=mutationImage
-                    #Show letter
                 elif(block[0]=="Visible Lava"):
                     img=visiblelavaImage
                     text=None
@@ -367,7 +377,7 @@ def drawSelectorBlocks():
     for y in range(len(rootImages)):
         img=list(rootImages.values())[y]
         game_display.blit(img, (882, y*gridSize+122))
-block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Lava","Visible Lava","Mutation","Root","Erase","Star"],relative_rect=pygame.Rect((50, 0), (200, 320)),manager=manager)
+block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Lava","Visible Lava","Mutation","Root","Erase","Star","Key","Lock"],relative_rect=pygame.Rect((50, 0), (200, 320)),manager=manager)
 auto_increment = pygame_gui.elements.UISelectionList(item_list=["Auto-increment","Same Number"],relative_rect=pygame.Rect((50, 300), (200, 96)),manager=manager)
 
 rock_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 390), (200, 40)),html_text="Rock group index:",manager=manager)
@@ -389,6 +399,11 @@ mutation_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 
 mutation_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 630), (200, 50)),manager=manager)
 mutation_number_box.set_allowed_characters("numbers")
 mutation_number_box.set_text("0")
+
+key_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 670), (200, 40)),html_text="Lock/key group index:",manager=manager)
+key_number_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 700), (200, 50)),manager=manager)
+key_number_box.set_allowed_characters("numbers")
+key_number_box.set_text("0")
 
 water_selector = pygame_gui.elements.UISelectionList(item_list=["0000","0100","0010","1100","1010","1001","0110","0101","0011","1110","1101","1011","0111","1111",""],relative_rect=pygame.Rect((900, 105), (100, 550)),manager=manager)
 
@@ -445,6 +460,16 @@ while jump_out == False:
                                 grid[mouseX][mouseY]=(selected,rockInt)
                                 if(auto_increment.get_single_selection()=="Auto-increment"):
                                     rock_number_box.set_text(str(rockInt+1))
+                            elif(selected=="Key"):
+                                keyInt=int(key_number_box.get_text())
+                                grid[mouseX][mouseY]=(selected,keyInt)
+                                if(auto_increment.get_single_selection()=="Auto-increment"):
+                                    key_number_box.set_text(str(keyInt+1))
+                            elif(selected=="Lock"):
+                                keyInt=int(key_number_box.get_text())
+                                grid[mouseX][mouseY]=(selected,keyInt)
+                                if(auto_increment.get_single_selection()=="Auto-increment"):
+                                    key_number_box.set_text(str(keyInt+1))
                             elif(selected=="Star"):
                                 starInt=0
                                 grid[mouseX][mouseY]=(selected,starInt)
@@ -474,6 +499,10 @@ while jump_out == False:
                     elif(selected=="Rock"):
                         rock_number_box.set_text(str(block[1]))
                     elif(selected=="Lava"):
+                        lava_number_box.set_text(str(block[1]))
+                    elif(selected=="Key"):
+                        lava_number_box.set_text(str(block[1]))
+                    elif(selected=="Lock"):
                         lava_number_box.set_text(str(block[1]))
             if(inWaterGrid(mouseX,mouseY)):
                 g=waterGrid()
