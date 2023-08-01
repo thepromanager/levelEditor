@@ -257,7 +257,7 @@ def saveLevel():
 #does not work with new system yet, använder vi nånsin längre?
 
 def newSaveLevel():
-    print("NewSaving level at "+repoToUnityPath + "/" + +levelPath+"/"+levelName)
+    print("NewSaving level at "+repoToUnityPath + "/" + levelPath+"/"+levelName)
     try:
         levelFile = open(repoToUnityPath + "/" + levelPath+"/"+levelName+".txt", "w")
 
