@@ -34,10 +34,12 @@ def loadImage(name,r,r2=None):
     image = pygame.transform.scale(image, (r, r2))
     return image
 def getFileNames(path):
-    print("getting filenames at: " + repoToUnityPath + "/" + path)
+    
     try:
+        print("getting filenames at: " + repoToUnityPath + "/" + path)
         return [f[:-4] for f in os.listdir(repoToUnityPath + "/" + path) if f[-4:]==".txt"]
     except:
+        print("failed getting filenames!")
         return []
 
 grassImage = loadImage("levelEditorImages/dirt.png", gridSize)
@@ -257,8 +259,9 @@ def saveLevel():
 #does not work with new system yet, använder vi nånsin längre?
 
 def newSaveLevel():
-    print("NewSaving level at "+repoToUnityPath + "/" + levelPath+"/"+levelName)
+    
     try:
+        print("NewSaving level at "+repoToUnityPath + "/" + levelPath+"/"+levelName)
         levelFile = open(repoToUnityPath + "/" + levelPath+"/"+levelName+".txt", "w")
 
         representedWaterNumbers = []
@@ -309,6 +312,7 @@ def newSaveLevel():
         print("Level saved successfully!")
     except Exception as e:
         print("failed to save")
+        print(grid)
         print("error", e)
         return None
 
@@ -545,9 +549,11 @@ while jump_out == False:
                 if event.ui_element == more_button:
                     for col in grid:
                         col.append(None)
+                    height += 1
                 if event.ui_element == less_button:
                     for col in grid:
                         col.pop()
+                    height -= 1
             if event.user_type == pygame_gui.UI_SELECTION_LIST_NEW_SELECTION:
                 if event.ui_element == level_selector:
                     level_text_box.set_text(event.text)
