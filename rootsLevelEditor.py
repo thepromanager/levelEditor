@@ -6,7 +6,7 @@ import os
 levelPath = "RootLevels" #grasslevels ha den i rätt mapp så behöver du inte hela din path
 #vad menar du ska jag ha alla random filer till leveleditorn i samma mapp som alla assets till spelet?
 #levelNum = 1
-repoToUnityPath = "C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Levels" # gjorde en sånhär istället. då kan man tex ha leveleditorn i en mapp och låta denna vara "../Levels" typ
+repoToUnityPath = "/Users/noelearlwatson/Downloads/Growth_Spurt/Assets/Levels" # gjorde en sånhär istället. då kan man tex ha leveleditorn i en mapp och låta denna vara "../Levels" typ
 levelName = ""
 
 resolution = (1300,800)
@@ -30,6 +30,7 @@ def waterGrid():
 def loadImage(name,r,r2=None):
     if not r2:
         r2=r
+    print(name)
     image = pygame.image.load(name)
     image = pygame.transform.scale(image, (r, r2))
     return image
@@ -413,6 +414,7 @@ water_selector = pygame_gui.elements.UISelectionList(item_list=["0000","0100","0
 
 less_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((240,20), (80, 40)),text='Less',manager=manager)
 more_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((240,60), (80, 40)),text='More',manager=manager)
+flip_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((240,100), (80, 40)),text='Flip X',manager=manager)
 
 load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1100,20), (80, 40)),text='Load',manager=manager)
 newload_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1100,120), (80, 40)),text='NewLoad',manager=manager)
@@ -429,6 +431,7 @@ ice_box.set_text("0")
 
 level_selector = pygame_gui.elements.UISelectionList(item_list=getFileNames(levelPath),relative_rect=pygame.Rect((1000, 400), (200, 250)),manager=manager)
 level_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1000,350), (80, 40)),text='Load Files',manager=manager)
+
 
 
 mouseDown = False
@@ -556,6 +559,8 @@ while jump_out == False:
                     for col in grid:
                         col.pop()
                     height -= 1
+                if event.ui_element == flip_button:
+                    grid.reverse()
             if event.user_type == pygame_gui.UI_SELECTION_LIST_NEW_SELECTION:
                 if event.ui_element == level_selector:
                     level_text_box.set_text(event.text)
