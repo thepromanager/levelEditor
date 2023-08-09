@@ -3,10 +3,14 @@ import pygame_gui
 import os
 
 # C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Levels
-levelPath = "RootLevels" #grasslevels ha den i rätt mapp så behöver du inte hela din path
-#vad menar du ska jag ha alla random filer till leveleditorn i samma mapp som alla assets till spelet?
-#levelNum = 1
-repoToUnityPath = "/Users/noelearlwatson/Downloads/Growth_Spurt/Assets/Levels" # gjorde en sånhär istället. då kan man tex ha leveleditorn i en mapp och låta denna vara "../Levels" typ
+# /Users/noelearlwatson/Downloads/Growth_Spurt/Assets/Levels
+
+levelPath = "ZenMode"
+
+# "C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Levels"
+# "/Users/noelearlwatson/Downloads/Growth_Spurt/Assets/Levels"
+
+repoToUnityPath = "C:/Users/brorb/wkspaces/Growth_Spurt/Assets/Levels" # gjorde en sånhär istället. då kan man tex ha leveleditorn i en mapp och låta denna vara "../Levels" typ
 levelName = ""
 
 resolution = (1300,800)
@@ -23,7 +27,7 @@ my_font = pygame.font.Font("Arial.ttf", 20)
 width=7
 height=12
 grid = [[None for i in range (height)] for j in range(width)]
-waterTiles = {"start":["0000","0000","0100","0010","0010"]}
+waterTiles = {"start":["0000","0000","0000","0000","0000"]}
 def waterGrid():
     return list(waterTiles.values())
 
