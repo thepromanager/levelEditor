@@ -54,6 +54,7 @@ lockImage = loadImage("levelEditorImages/lock.png", gridSize)
 riskyImage = loadImage("levelEditorImages/risky.png", gridSize)
 rockImage = loadImage("levelEditorImages/stone.png", gridSize)
 visiblerockImage = loadImage("levelEditorImages/visiblestone.png", gridSize)
+visiblerock1Image = loadImage("levelEditorImages/visiblestone1.png", gridSize)
 lavaImage = loadImage("levelEditorImages/lava.png", gridSize)
 visiblelavaImage = loadImage("levelEditorImages/visiblelava.png", gridSize)
 waterImage = loadImage("levelEditorImages/water.png", gridSize)
@@ -191,6 +192,8 @@ def newLoadLevel():
                 grid[x][y] = ("Rock",int(blockData[1]))
             elif blockData[0]=="s":
                 grid[x][y] = ("Visible Rock",-1)
+            elif blockData[0]=="s1":
+                grid[x][y] = ("Visible Rock1",-1)
             elif blockData[0]=="t":
                 grid[x][y] = ("Risky",-1)
             elif blockData[0]=="st":
@@ -290,7 +293,9 @@ def newSaveLevel():
                 else:
                     if block[0]=="Visible Rock":
                         letter = "s"
-                    if block[0]=="Risky":
+                    elif block[0]=="Visible Rock1":
+                        letter = "s1"
+                    elif block[0]=="Risky":
                         letter = "t"
                     elif block[0]=="Water":
                         letter = "w:" + str(block[1])
@@ -357,6 +362,9 @@ def drawGrid():
                 elif(block[0]=="Visible Rock"):
                     img=visiblerockImage
                     text=None
+                elif(block[0]=="Visible Rock1"):
+                    img=visiblerock1Image
+                    text=None
                 elif(block[0]=="Risky"):
                     img=riskyImage
                     text=None
@@ -394,7 +402,7 @@ def drawSelectorBlocks():
     for y in range(len(rootImages)):
         img=list(rootImages.values())[y]
         game_display.blit(img, (882, y*gridSize+122))
-block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Risky","Lava","Visible Lava","Mutation","Root","Erase","Star","Key","Lock"],relative_rect=pygame.Rect((50, 0), (200, 320)),manager=manager)
+block_selector = pygame_gui.elements.UISelectionList(item_list=["Water","Rock","Visible Rock","Visible Rock1","Risky","Lava","Visible Lava","Mutation","Root","Erase","Star","Key","Lock"],relative_rect=pygame.Rect((50, 0), (200, 320)),manager=manager)
 auto_increment = pygame_gui.elements.UISelectionList(item_list=["Auto-increment","Same Number"],relative_rect=pygame.Rect((50, 300), (200, 96)),manager=manager)
 
 rock_textbox = pygame_gui.elements.UITextBox(relative_rect=pygame.Rect((50, 390), (200, 40)),html_text="Rock group index:",manager=manager)
